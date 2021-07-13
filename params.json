@@ -1,0 +1,18 @@
+{
+    "cuda":true,
+    "shuffle":true,
+    "n_factors": 40,
+    "batch_size": 32,
+    "dropout_p":0.02,
+    "sparse":false,
+    "lr":0.01,
+    "weight_decay":0,
+    "n_epochs":10,
+    "verbose":false,
+    "random_seed":1234,
+    "hogwild":false,
+    "num_workers":0,
+    "eval_metrics":null,
+    "k":5,
+    "threshold":0.3273161649703975
+}
