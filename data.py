@@ -1,63 +1,68 @@
-import pandas as pd
 import numpy as np
 
-# reading user file
-u_cols = ['users_id', 'age', 'sex', 'occupation', 'zip_code']
-users = pd.read_csv('ml-100k/u.user', sep='|', names=u_cols, encoding='latin=1')
+import os
+import requests
 
-n_users = users.shape[0]
-print('Number of users:', n_users)
-# users.head() # uncomment this to see some few examples
+import pandas as pd
+import scipy.sparse as sp
 
-# reading rating file
-r_cols = ['user_id', 'movie_id', 'rating', 'unix_timestamp']
 
-ratings_base = pd.read_csv('ml-100k/ua.base', sep='\t', names=r_cols, encoding='latin-1')
-ratings_test = pd.read_csv('ml-100k/ua.test', sep='\t', names=r_cols, encoding='latin-1')
+"""
+Shamelessly taken from
+https://github.com/maciejkula/triplet_recommendations_keras
+"""
 
-rate_train = ratings_base.to_numpy()
-rate_test = ratings_test.to_numpy()
+def train_test_split(interactions, n=10):
+	"""
+	Split an interactions matrix into training and test sets
+	Parameters
+	----------
+	interactions: np.ndarray
+	n: int (defauly=10)
+		Number of items to select / row to place into test.
 
-print("Number of training rates: %s"% rate_train.shape[0])
-print("Nubmer of test rates: %s"% rate_test.shape[0])
+	Returns
+	-------
+	train: np.ndarray
+	test: np.ndarray
+	"""
+	test = np.zeros(interactions.shape)
+	train = interactions.copy()
+	for user in range(interactions.shape[0]):
+		if interactions[user, :].nonzero()[0].shape[0]>n:
+			test_interactions = np.random.choice(interactions[user, :].nonzero()[0], size=n, replace=False)
+			train[user, test_interactions] = 0
+			test[user, test_interactions] = interactions[user, test_interactions]
 
-# item profiles
-# reading item file
-i_cols = ['movie_id', 'movie title', 'release date', 'video release date', 'IMDB URL', 'unknown', 'Action', 'Adventure',
-'Animation', 'Children\s', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy',
-'Film-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western']
+	return train, test
 
-items = pd.read_csv('ml-100k/u.item', sep='|', names=i_cols, encoding='latin-1')
+def read_movielens_df():
+	path = '/home/dat/Recomendation-systems/'
+	zipfile = os.path.join(path, 'ml-100k.zip')
+	if not os.path.isfile(zipfile):
+		_download_movielens(path)
+	fname = os.path.join(path, 'ml-100k', 'u.data')
+	names = ['user_id', 'item_id', 'rating', 'timestamp']
+	df = pd.read_csv(fname, sep='\t', names=names)
+	return df
 
-n_items = items.shape[0]
-print('Number of items:', n_items)
+def get_movie_len_interactions():
+	df = read_movielens_df()
 
-# focus only on 19 binary values at the end of each rows
-X0 = items.to_numpy()
-X_train_counts = X0[:,-19]
+	n_users = df.user_id.unique().shape[0]
+	n_imtes = df.item_id.unique().shape[0]
 
-# Construct the feature vector on each item based on matrix of
-# geners and feature TF-IDF.
+	interactions = np.zeros((n_users, n_items))
+	for row in df.itertuples():
+		interactions[row[1]-1, row[2]-1] = row[3]
+	return interactions
 
-from sklearn.feature_extraction.text import TfidfTransformer
-transformer = TfidfTransformer(smooth_idf=True, norm='l2')
-tfidf = transformer.fit_transform(X_train_counts.tolist()).toarray()
+def get_movielens_train_test_split(implicit=False):
+	interactions = get_movielens_interactions()
+	if implivit:
+		interactions = (interactions >= 4).astype(np.float32)
+	train, test = train_test_split(interactions)
+	train = sp.coo_matrix(train)
+	test = sp.coo_matrix(test)
+	return train, test
 
-# tfidf corresponds to feature vector of each movie
-
-def get_items_rated_by_user(rate_matrix, user_id):
-    """
-    in each line of rate_matrix, we have infor: user_id, item_id, rating(scores),
-    time_stamp, we care about the first three values
-    return (item_ids, scores) rated by user user_id
-    """
-
-    y = rate_matrix[:, 0] # all users
-    # item indices rated by user_id
-    # we need to +1 to user_id since in the rate_matrix, id start from 1
-    # while index in python starts from 0.
-    ids = np.where(y == user_id+1)[0]
-    item_ids = rate_matrix[ids, 1] - 1 # index starts from 0
-    scores = rate_matrix[ids, 2]
-    return (item_ids, scores)
-    
