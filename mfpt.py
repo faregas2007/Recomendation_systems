@@ -59,7 +59,7 @@ class mfpt(nn.Module):
         return preds.squeeze()
 
 def initialize_model(
-    params: Namespace
+    params: Namespace,
     device: torch.device = torch.device('cpu')
 )-> nn.Module:
 
@@ -68,7 +68,7 @@ def initialize_model(
         n_items = int(params.n_items),
         n_factors = int(params.n_factors),
         dropout_p = int(params.dropout_p),
-        sparse = bool(params.sparse)
+        sparse = params.sparse
     )
 
     model = model.to(device)
