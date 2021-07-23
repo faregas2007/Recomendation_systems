@@ -59,7 +59,7 @@ def get_movie_len_interactions():
 
 def get_movielens_train_test_split(implicit=False):
 	interactions = get_movielens_interactions()
-	if implivit:
+	if implicit:
 		interactions = (interactions >= 4).astype(np.float32)
 	train, test = train_test_split(interactions)
 	train = sp.coo_matrix(train)
