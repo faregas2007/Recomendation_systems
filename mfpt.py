@@ -19,12 +19,8 @@ def load_artifacts(run_id, device):
         """
         # add artifacts mlflow here latter
         params = Namespace(**utils.load_dict('params.json"))
-        model_state = torch.load("model.pt", map_location=device)
-        performance = utils.load_dict(filepath="performance.json")
         return {
             "params": params 
-            "model": model
-            "performance": performance
         }
 
 def Interactions(data.Dataset):
