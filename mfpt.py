@@ -9,6 +9,24 @@ from scipy.sparse import rand as sprand
 import argparse import Namespace
 from typing import List
 
+def load_artifacts(run_id, device):
+        """
+        Load artifacts for current model
+        
+        Args:
+            run_id (str) : ID of the model run to laod artifacts. 
+            device (torch.device) : Device to run model on. Default on CPU
+        """
+        # add artifacts mlflow here latter
+        params = Namespace(**utils.load_dict('params.json"))
+        model_state = torch.load("model.pt", map_location=device)
+        performance = utils.load_dict(filepath="performance.json")
+        return {
+            "params": params 
+            "model": model
+            "performance": performance
+        }
+
 def Interactions(data.Dataset):
     """
     Hold data in the form of an interactions matrix
@@ -32,11 +50,11 @@ def Interactions(data.Dataset):
 
 class mfpt(nn.Module):
     def __init__(self, 
-            n_users:int,
-            n_items:int,
-            n_factors:int,
+            n_users: int,
+            n_items: int,
+            n_factors: int,
             dropout_p: float,
-            sparse: bool)->None:
+            sparse: bool) -> None:
         """
         Parameters
         ----------
