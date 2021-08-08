@@ -23,27 +23,6 @@ def load_artifacts(run_id, device):
             "params": params 
         }
 
-def Interactions(data.Dataset):
-    """
-    Hold data in the form of an interactions matrix
-    Users are rows
-    Items are columns
-    Elements of the matrix are the ratings given by a user for an item
-    """
-    def __init__(self, mat):
-        self.mat = mat.astype(np.float32).tocoo()
-        self.n_users = self.mat.shape[0]
-        self.n_items = self.mat.shape[1]
-    
-    def __getitem__(self, index):
-        row = self.mat.row[index]
-        col = self.mat.col[index]
-        val = self.mat.data[index]
-        return (row, col), val
-
-    def __len__(self):
-        return self.mat.nnz
-
 class mfpt(nn.Module):
     def __init__(self, 
             n_users: int,
@@ -68,17 +47,17 @@ class mfpt(nn.Module):
         """
         super(mfpt, self).__init__()
 
-        self.n_users = torch.tensor(n_users, dtype=float)
-        self.n_items = torch.tensor(n_items, dtype=float)
-        self.n_factors = torch.tensor(n_factors, dtype=float)
-        self.dropout_p = torch.tensor(dropout_p, dtype=float)
+        self.n_users = n_users
+        self.n_items = n_items
+        self.n_factors = n_factors
+        self.dropout_p = dropout_p
         self.sparse = sparse
 
         self.dropout = nn.Dropout(p=self.dropout_p)
-        self.users_biases = torch.nn.Embedding(n_users, 1, sparse=sparse)
-        self.item_biases = torch.nn.Embedding(n_users, 1, sparse=sparse)
-        self.user_factors = torch.nn.Embedding(n_users, n_factors, sparse=sparse)
-        self.item_factors = torch.nn.Embedding(n_items, n_factors, sparse=sparse)
+        self.users_biases = torch.nn.Embedding(self.n_users, 1, sparse=self.sparse)
+        self.item_biases = torch.nn.Embedding(self.n_users, 1, sparse=self.sparse)
+        self.user_factors = torch.nn.Embedding(self.n_users, self.n_factors, sparse=self.sparse)
+        self.item_factors = torch.nn.Embedding(self.n_items, self.n_factors, sparse=self.sparse)
 
     def forward(self, user: int, item:int)-> torch.Tensor:
         """
@@ -117,7 +96,7 @@ class mfpt(nn.Module):
 
 
 def initialize_model(
-    params: Namespace
+    params: Namespace,
     device: torch.device = torch.device('cpu')
 )-> nn.Module:
 
