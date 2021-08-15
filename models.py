@@ -9,6 +9,8 @@ from scipy.sparse import rand as sprand
 import argparse import Namespace
 from typing import List
 
+from utils import *
+
 def load_artifacts(run_id, device):
         """
         Load artifacts for current model
@@ -79,15 +81,21 @@ class mfpt(nn.Module):
             Predicted ratings
         """
         
-        ues = self.user_factors(user)
-        uis = self.item_factors(item)
+        user_embedding = self.user_factors(user).float()
+        item_embedding = self.item_factors(item).float()
 
-        preds = self.user_biases(user)
-        preds += self.item_biases(item)
+        preds = self.user_biases(user).float()
+        preds += self.item_biases(item).float()
 
-        preds += ((self.dropout(ues)*self.dropout(uis)).sum(dim=1, keepdim=True))
-        return preds.squeeze()
-
+        preds += ((self.dropout(user_embedding)*self.dropout(item_embedding)).sum(dim=1, keepdim=True))
+        return preds.reshape(-1).squeeze()
+    
+    def get_factors(self, users, items):
+        user_embedding = self.user_factors(users).float()
+        item_embedding = self.item_factors(items).float()
+                                             
+        return user_embedding, item_embedding
+                                             
     def __call__(self, *args):
         return self.forward(*args)
 
@@ -96,13 +104,19 @@ class mfpt(nn.Module):
 
 
 def initialize_model(
-    params: Namespace,
+    params_fp: Path,
     device: torch.device = torch.device('cpu')
 )-> nn.Module:
 
+    params = Namespace(**utls.load_dict(params_fp))                               
+                                             
+    dataset = get_data()
+    n_users = dataset['user_id'].nunique() + 1
+    n_items = dataset['item_id'].nunique() + 1
+                                             
     model = mfpt(
-        n_users = int(params.n_users),
-        n_items = int(params.n_items),
+        n_users = int(n_users),
+        n_items = int(n_items),
         n_factors = int(params.n_factors),
         dropout_p = int(params.dropout_p),
         sparse = bool(params.sparse)
