@@ -30,7 +30,7 @@ class Trainer(object):
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.scheduler = scheduler
-        #self.trial = trial
+        self.trial = trial
 
     def train_step(self, dataloader):
         """Train step
@@ -100,17 +100,18 @@ class Trainer(object):
             dataloader (torch.utils.data.DataLoader): Torch dataloader to load batches from.
         """
         self.model.eval()
-        predictions = []
+        predictions, labels = [], []
 
         # Interate over val batches
         with torch.no_grad():
             for batch, (user, item, label) in enumerate(dataloader):
                 # Forward pass w/ inputs
                 prediction = self.model(user, item)
-                J = self.loss_fn(prediction, label).item()
 
-                predictions.extend(J)
-        return np.vstack(predictions)
+                predictions.extend(prediction.numpy())
+                labels.extend(label.numpy())
+                
+        return np.vstack(labels), np.vstack(predictions)
 
     def train(self, 
         num_epochs: int, 
@@ -138,10 +139,10 @@ class Trainer(object):
                 break
             
             # Pruning based on the intermediate value
-            #if self.trial:
-            #    self.trial.report(val_loss, epoch)
-            #    if self.trial.should_prune():
-            #        raise optuna.TrialPruned()
+            if self.trial:
+                self.trial.report(val_loss, epoch)
+                if self.trial.should_prune():
+                    raise optuna.TrialPruned()
 
             # Tracking
             mlflow.log_metrics(
@@ -160,12 +161,9 @@ class Trainer(object):
 
 
 def train(
-    params: Namespace,
-    train_dataloader: torch.utils.data.DataLoader,
-    val_dataloader: torch.utils.data.DataLoader,
-    model: nn.Module,
-    device: torch.device,
-    #trial: optuna.trial._trial.Trial=None,
+    params_fp: Path,
+    device: torch.device=torch.device('cpu'),
+    trial: optuna.trial._trial.Trial=None,
 )->Tuple:
     """
     Train a model
@@ -182,6 +180,14 @@ def train(
         The best trained model loss and performance metrics
     """
 
+    parans = Namespace(**utils.load_dict(params_fp))
+    
+    dataset = utls.get_data()
+    dataloader = data.RCDataloader(params, dataset)
+    train_dataloader = dataloader.get_train_set()
+    test_dataloader = dataloader.get_test_set()
+    
+    model = models.initialize_model(params_fp, device)
     # Define loss
     loss_func = torch.nn.MSELoss()
 
@@ -203,7 +209,7 @@ def train(
 
     # Train
     best_val_loss, best_model = trainer.train(
-        params.n_epochs, params.patience, train_dataloader, val_dataloader
+        params.n_epochs, params.patience, train_dataloader, test_dataloader
     )
 
     return params, best_model, best_val_loss
