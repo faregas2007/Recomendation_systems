@@ -16,5 +16,5 @@
     "threshold":0.35
     "patience":5,
     "save_model":false,
-    "model":mfpt
+    "model":"mfpt"
 }
