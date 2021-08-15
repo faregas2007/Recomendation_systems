@@ -110,7 +110,7 @@ def initialize_model(
 
     params = Namespace(**utls.load_dict(params_fp))                               
                                              
-    dataset = get_data()
+    dataset = utils.get_data()
     n_users = dataset['user_id'].nunique() + 1
     n_items = dataset['item_id'].nunique() + 1
                                              
