@@ -15,7 +15,10 @@ from data import *
 from utils import *
 from config import *
 
-def load_artifacts():
+def load_artifacts(
+    run_id: str, 
+    device: torch.device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu"),
+)->Dict:
     """Load artifacts for current model
 
     Args:
@@ -38,7 +41,7 @@ def load_artifacts():
     performance = utils.load_dict(filepath=Path(artifact_uri, "performance.json"))
 
     # Inititalize model
-    model = models.initialize(
+    model = models.initialize_model(
         params = params,
         n_users= n_users,
         n_itens = n_items,
