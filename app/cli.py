@@ -27,8 +27,7 @@ def optimize(
 
     pruner = optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=5)
     study = optuna.create_study(study_name=study_name, direction='maximize', pruner=pruner)
-    mlflow_callback = MLflowCallback(tracking_uri=mlflow.get_tracking_uri(), metric_name="f1")
-
+    mlflow_callback = MLflowCallback(tracking_uri=mlflow.get_tracking_uri(), metric_name=eval_metrics)
 
     study.optimize(
         lambda trial: objective(params_fp=params_fp, device=device, trial=trial),
@@ -37,7 +36,7 @@ def optimize(
     )
 
     # all trials
-    print("Best value (f1):%s"%{study.best_trial.value})
+    print("Best value"+ str(eval_metrics)+":%s"%{study.best_trial.value})
     params = {**params.__dict__, **study.best_trial.params}
     #params['threshold'] = study.best_trial.user_attrs['threshold']
     save_dict(params, params_fp, cls=NumpyEncoder)

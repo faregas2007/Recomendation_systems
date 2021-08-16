@@ -17,6 +17,7 @@ import tempfile
 import json
 
 from utils import *
+from config import *
 from data import *
 from models import *
 
@@ -141,7 +142,7 @@ class Trainer(object):
         return best_val_loss, best_model
 
 def train(
-    params_fp: Path,
+    params_fp: Path=Path(config.config_dir, "params.json"),
     #train_dataloader: torch.utils.data.DataLoader,
     #val_dataloader: torch.utils.data.DataLoader,
     device: torch.device('cuda:0' if torch.cuda.is_available() else "cpu"),
@@ -170,7 +171,7 @@ def train(
     # Define optimizer & scheduler
     optimizer = torch.optim.SGD(model.parameters(), lr=params.lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode = "min", factor=0.05, patience=5
+        optimizer, mode = "min", factor=0.05, patience=params.patience
     )
 
     trainer = Trainer(

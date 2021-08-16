@@ -11,7 +11,7 @@
     "n_epochs":10,
     "random_seed":1234,
     "num_workers":0,
-    "eval_metrics":null,
+    "eval_metrics":"f1",
     "top_k":5,
     "threshold":0.35,
     "patience":5,

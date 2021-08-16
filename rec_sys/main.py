@@ -82,7 +82,7 @@ def objective(
     if params.save_model:
         torch.save(artifacts["model"].state_dict(), params.model+"recsys.pkl")
     # must return as a float, pick one performance metrics.
-    return performance["overall"]["f1"]
+    return performance["overall"][params.eval_metrics]
  
 def train_model(
     params_fp: Path = Path(config.config_dir, "params.json"),
