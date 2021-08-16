@@ -42,9 +42,9 @@ def load_artifacts(
 
     # Inititalize model
     model = models.initialize_model(
-        params = params,
         n_users= n_users,
         n_itens = n_items,
+        params = params,
         device = device
     )
 
