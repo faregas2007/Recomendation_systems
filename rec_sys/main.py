@@ -113,10 +113,10 @@ def train_model(
     test_dataloader = dataloader.get_test_set()
 
     model = models.initialize_model(
+        n_users = n_users,
+        n_items = n_items,
         params_fp = params_fp,
-        device = device,
-        n_users = n_users, 
-        n_items = n_items)
+        device = device)
 
     loss_func = torch.nn.MSELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=params.lr)

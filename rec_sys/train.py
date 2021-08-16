@@ -18,6 +18,7 @@ import json
 
 from utils import *
 from data import *
+from models import *
 
 class Trainer(object):
     def __init__(self, 
@@ -144,8 +145,7 @@ def train(
     #train_dataloader: torch.utils.data.DataLoader,
     #val_dataloader: torch.utils.data.DataLoader,
     device: torch.device('cuda:0' if torch.cuda.is_available() else "cpu"),
-    trial: optuna.trial._trial.Trial = None,
-)->Tuple:
+    trial: optuna.trial._trial.Trial = None)->Tuple:
 
     params = Namespace(**utils.load_dict(params_fp))
 
@@ -158,7 +158,13 @@ def train(
     train_dataloader = dataloader.get_train_set()
     test_dataloader = dataloader.get_test_set()
 
-    model = initialize_model(params_fp, n_users, n_items, device)
+    model = models.initialize_model(
+        n_users=n_users, 
+        n_items=n_items, 
+        params_fp=params_fp,
+        device=device
+    )
+
     loss_fn = nn.MSELoss()
 
     # Define optimizer & scheduler

@@ -1,0 +1,16 @@
+# create app.py for recommendation
+# write the topk function and return topk movie recmmendation --> check
+# make rating matrix, becomes binary feedback (0,1) for better training accuracy -- check
+# add more metric for training, evaluation. Using mlflow to track hyper-parameter training -- check
+# write the database using sqlalchemy, dataset = movielens. 
+# scrawling from IMDB using beautifulsoup. Same format, user_id, item_id, rating_id, timestamp, titles, genres. 
+# Testing data drifting between movielines 100k and IMDB dataset
+
+# add more models, implicit feedback, bayesian ranking into model lists, testing metrics performance between models.
+# add more validations handling into the dataset.
+# create the testing, unit_testing for api endpoints and modelling files (more careful thinking about testing)
+# CI/CD to cloud service for computing, azureml, gcp, aws ...
+
+# create the train pipeline --> check 
+
+# Bugs: fixed the bug, could not be cast into float in users_factors and items_factors --> fixed

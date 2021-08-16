@@ -90,7 +90,7 @@ def get_metrics(
     return metrics
 
 def evaluate(
-    params_fp: Path,
+    params_fp: Path = Path(config.config_dir, "params.json"),
     model,
     dataloader: torch.utils.data.DataLoader,
     #device: torch.device("cuda:0" if torch.cuda.is_available else "cpu"),

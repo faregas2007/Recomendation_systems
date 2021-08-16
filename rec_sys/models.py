@@ -10,6 +10,8 @@ import argparse import Namespace
 from typing import List
 
 from utils import *
+from models import *
+from config import *
 
 class mfpt(nn.Module):
     def __init__(self, 
@@ -88,10 +90,11 @@ class mfpt(nn.Module):
 
 
 def initialize_model(
-    params_fp: Path,
     n_users: int,
     n_tems: int,
-    device: torch.device = torch.device('cpu'))-> nn.Module:
+    params_fp: Path = Path(config.config_dir, "params.json"),
+    device: torch.device = torch.device('cpu')
+    )-> nn.Module:
 
     params = Namespace(**utls.load_dict(params_fp))                               
                                              
