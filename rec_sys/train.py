@@ -1,8 +1,3 @@
-from argparse import Namespace
-from typing import Dict, Tuple
-
-import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -10,20 +5,28 @@ import torch.nn.functional as F
 
 import optuna
 import mlflow
-#from mlflow import pytorch
-#from pprint import pformat
+
+import os
+import numpy as np
+from numpyencoder import NumpyEncoder
+
+from argparse import Namespace
+from typing import List, Dict, Tuple, Optional
+from pathlib import Path
+import tempfile
+import json
+
+from utils import *
+from data import *
 
 class Trainer(object):
-    """Object used to facilitate training"""
-
     def __init__(self, 
         model, 
         device, 
         loss_fn=None, 
         optimizer=None, 
         scheduler= None, 
-        trial=None,):
-
+        trial=None):
         # Set params
         self.model = model
         self.device = device
@@ -33,13 +36,6 @@ class Trainer(object):
         self.trial = trial
 
     def train_step(self, dataloader):
-        """Train step
-
-        Args:
-            dataloader (torch.utils.data.DataLoader): torch dataloader to load batches from.
-        """
-
-        # Set model to train mode
         self.model.train()
         loss = 0.0
 
@@ -61,16 +57,10 @@ class Trainer(object):
         return loss
 
     def eval_step(self, dataloader):
-        """Validation or test step
-        
-        Args:
-            dataloader(torch.utils.data.DataLoader): Torch dataloader to load batches from.
-        """
+        """Validation or test step"""
         # Set model to eval mode
         self.model.eval()
 
-        #size = len(dataloader.dataset)
-        #num_batches = len(dataloader)
         loss = 0.0
         predictions, labels = [], []
 
@@ -81,8 +71,7 @@ class Trainer(object):
                 J = self.loss_fn(prediction, label).item()
 
                 loss += (J - loss)/(batch + 1)
-                #print(prediction.argmax(1), label)
-                #correct += (prediction == label).type(torch.float).sum().item()
+
                 # store outputs
                 prediction = prediction.numpy()
                 predictions.extend(prediction)
@@ -90,14 +79,10 @@ class Trainer(object):
 
         return loss, np.vstack(labels), np.vstack(predictions)
 
-    def predict_step(self, dataloader: torch.utils.data.DataLoader):
-        """ Prediction (inference) step
+    def predict_step(self, dataloader):
+        """ Prediction step (inference)
         
-        Note:
-            Loss is not calcualted for this loop
-
-        Args:
-            dataloader (torch.utils.data.DataLoader): Torch dataloader to load batches from.
+        Loss is not calculated for this loop.
         """
         self.model.eval()
         predictions, labels = [], []
@@ -108,19 +93,14 @@ class Trainer(object):
                 # Forward pass w/ inputs
                 prediction = self.model(user, item)
 
-                predictions.extend(prediction.numpy())
+                prediction = prediction.numpy()
+                predictions.extend(prediction)
                 labels.extend(label.numpy())
-                
+
         return np.vstack(labels), np.vstack(predictions)
 
-    def train(self, 
-        num_epochs: int, 
-        patience: int, 
-        train_dataloader: torch.utils.data.DataLoader, 
-        val_dataloader: torch.utils.data.DataLoader):
+    def train(self, num_epochs, patience, train_dataloader, val_dataloader):
         best_val_loss = np.inf
-        best_model = None
-        _patience = patience
         for epoch in range(num_epochs):
             # Step
             train_loss = self.train_step(dataloader=train_dataloader)
@@ -157,57 +137,45 @@ class Trainer(object):
                 f"lr: {self.optimizer.param_groups[0]['lr']:.2E},"
                 f"patience: {_patience}"
             )
-        return best_model
-
+        return best_val_loss, best_model
 
 def train(
     params_fp: Path,
-    device: torch.device=torch.device('cpu'),
-    trial: optuna.trial._trial.Trial=None,
+    #train_dataloader: torch.utils.data.DataLoader,
+    #val_dataloader: torch.utils.data.DataLoader,
+    device: torch.device('cuda:0' if torch.cuda.is_available() else "cpu"),
+    trial: optuna.trial._trial.Trial = None,
 )->Tuple:
-    """
-    Train a model
 
-    Args:
-        params (Namespace): parameters for data processing and training.
-        train_dataloader (torch.utils.data.DataLoader): train data loader.
-        val_dataloader (torch.utils.data.DataLoader): val data loader.
-        model (nn.Module): Intitlaize model to train
-        device (torch.device): Device to run model on
-        trial (optuna.trial._trial.Trail, otpinal): Optuna optimization trial. Defaults to None.
-    
-    Returns:
-        The best trained model loss and performance metrics
-    """
+    params = Namespace(**utils.load_dict(params_fp))
 
-    parans = Namespace(**utils.load_dict(params_fp))
-    
-    dataset = utls.get_data()
+    dataset = utils.get_data()
+    n_users = dataset['user_id'].nunique() + 1
+    n_items = dataset['item_id'].nunique() + 1
+
+    # left one out validation
     dataloader = data.RCDataloader(params, dataset)
     train_dataloader = dataloader.get_train_set()
     test_dataloader = dataloader.get_test_set()
-    
-    model = models.initialize_model(params_fp, device)
-    # Define loss
-    loss_func = torch.nn.MSELoss()
+
+    model = initialize_model(params_fp, n_users, n_items, device)
+    loss_fn = nn.MSELoss()
 
     # Define optimizer & scheduler
-    optimizer = torch.optim.Adam(model.parameters(), lr=params.lr)
+    optimizer = torch.optim.SGD(model.parameters(), lr=params.lr)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer, mode='min', factor=0.05, patience=5
+        optimizer, mode = "min", factor=0.05, patience=5
     )
 
-    # Trainer module
     trainer = Trainer(
-        model = model,
-        device = device,
-        loss_fn = loss_fn,
-        optimizer = optimizer,
-        scheduler = scheduler,
-        #trial = trial,
+        model=model,
+        device=device,
+        loss_fn=loss_fn,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        trial=trial
     )
 
-    # Train
     best_val_loss, best_model = trainer.train(
         params.n_epochs, params.patience, train_dataloader, test_dataloader
     )

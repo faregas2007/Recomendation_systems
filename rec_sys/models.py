@@ -11,27 +11,12 @@ from typing import List
 
 from utils import *
 
-def load_artifacts(run_id, device):
-        """
-        Load artifacts for current model
-        
-        Args:
-            run_id (str) : ID of the model run to laod artifacts. 
-            device (torch.device) : Device to run model on. Default on CPU
-        """
-        # add artifacts mlflow here latter
-        params = Namespace(**utils.load_dict('params.json"))
-        return {
-            "params": params 
-        }
-
 class mfpt(nn.Module):
     def __init__(self, 
             n_users: int,
             n_items: int,
             n_factors: int,
-            dropout_p: float,
-            sparse: bool) -> None:
+            dropout_p: float)->None:
         """
         Parameters
         ----------
@@ -53,13 +38,12 @@ class mfpt(nn.Module):
         self.n_items = n_items
         self.n_factors = n_factors
         self.dropout_p = dropout_p
-        self.sparse = sparse
 
         self.dropout = nn.Dropout(p=self.dropout_p)
-        self.users_biases = torch.nn.Embedding(self.n_users, 1, sparse=self.sparse)
-        self.item_biases = torch.nn.Embedding(self.n_users, 1, sparse=self.sparse)
-        self.user_factors = torch.nn.Embedding(self.n_users, self.n_factors, sparse=self.sparse)
-        self.item_factors = torch.nn.Embedding(self.n_items, self.n_factors, sparse=self.sparse)
+        self.users_biases = torch.nn.Embedding(num_embeddings=self.n_users, embedding_dim=1, sparse=True)
+        self.item_biases = torch.nn.Embedding(num_embeddings=self.n_users, embedding_dim=1, sparse=True)
+        self.user_factors = torch.nn.Embedding(num_embeddings=self.n_users, embedding_dim=self.n_factors, sparse=True)
+        self.item_factors = torch.nn.Embedding(num_embeddings=self.n_items, embedding_dim=self.n_factors, sparse=True)
 
     def forward(self, user: int, item:int)-> torch.Tensor:
         """
@@ -105,21 +89,21 @@ class mfpt(nn.Module):
 
 def initialize_model(
     params_fp: Path,
-    device: torch.device = torch.device('cpu')
-)-> nn.Module:
+    n_users: int,
+    n_tems: int,
+    device: torch.device = torch.device('cpu'))-> nn.Module:
 
     params = Namespace(**utls.load_dict(params_fp))                               
                                              
-    dataset = utils.get_data()
-    n_users = dataset['user_id'].nunique() + 1
-    n_items = dataset['item_id'].nunique() + 1
+    #dataset = utils.get_data()
+    #n_users = dataset['user_id'].nunique() + 1
+    #n_items = dataset['item_id'].nunique() + 1
                                              
     model = mfpt(
         n_users = int(n_users),
         n_items = int(n_items),
         n_factors = int(params.n_factors),
-        dropout_p = int(params.dropout_p),
-        sparse = bool(params.sparse)
+        dropout_p = int(params.dropout_p)
     )
 
     model = model.to(device)

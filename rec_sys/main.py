@@ -13,13 +13,53 @@ from train import *
 from eval import *
 from data import *
 from utils import *
+from config import *
+
+def load_artifacts():
+    """Load artifacts for current model
+
+    Args:
+        run_id (str): ID of the model run to load artifacts. Defaults to run ID in config.MODEL_DIR
+        device (torch.device): Device to run model on. Defaults to CPU
+    
+    Returns:
+        Artifacts needed for inference
+    """
+
+    dataset = utils.get_data()
+    n_users = dataset['n_users'].nunique() + 1
+    n_items = dataset['n_items'].nunique() + 1
+
+    device = torch.device('cude:0' if cuda.is_available() else "cpu")
+
+    artifact_uri = mlflow.get_run(run_id=run_id).info.artifact_uri.split("file://")[-1]
+    params = Namespace(**utils.load_dict(filepath=Path(artifact_uri, 'params.json')))
+    model_state = torch.load(Path(artifact_uri, "model.pt"), map_location=device)
+    performance = utils.load_dict(filepath=Path(artifact_uri, "performance.json"))
+
+    # Inititalize model
+    model = models.initialize(
+        params = params,
+        n_users= n_users,
+        n_itens = n_items,
+        device = device
+    )
+
+    model.load_state_dict(model_state)
+
+    return {
+        "params": parmas,
+        "model": model,
+        "performance": performance,
+    }
+
 
 def objective(
-    params_fp: Path,
+    params_fp: Path = Path(config.config_dir, "params.json"),
     device: torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     trial: optuna.trial._trial.Trial)->float:
 
-    params = Namespace(**utils.load_dict(params_fp))
+    params = Namespace(**load_dict(params_fp))
 
     params.dropout_p = trial.suggest_uniform("dropout_p", 0.3, 0.8)
     params.lr = trial.suggest_loguniform("lr", 1e-5, 1e-4)
@@ -38,11 +78,11 @@ def objective(
 
     if params.save_model:
         torch.save(artifacts["model"].state_dict(), params.model+"recsys.pkl")
-
-    return performance
+    # must return as a float, pick one performance metrics.
+    return performance["overall"]["f1"]
  
 def train_model(
-    params_fp: Path,
+    params_fp: Path = Path(config.config_dir, "params.json"),
     device: torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     trial: optuna.trial._trial.Trial=None
 )->Dict:

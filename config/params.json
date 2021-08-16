@@ -13,7 +13,7 @@
     "num_workers":0,
     "eval_metrics":null,
     "top_k":5,
-    "threshold":0.35
+    "threshold":0.35,
     "patience":5,
     "save_model":false,
     "model":"mfpt"
