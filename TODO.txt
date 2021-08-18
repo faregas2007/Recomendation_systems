@@ -12,5 +12,7 @@
 # CI/CD to cloud service for computing, azureml, gcp, aws ...
 
 # create the train pipeline --> check 
+# create the ranking pipeline from best_run in best experiment. Using Bayesian personalize ranking.
+Paper: https://arxiv.org/pdf/1205.2618.pdf
 
 # Bugs: fixed the bug, could not be cast into float in users_factors and items_factors --> fixed

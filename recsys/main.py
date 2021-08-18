@@ -58,9 +58,9 @@ def load_artifacts(
 
 
 def objective(
-    params_fp: Path = Path(config.config_dir, "params.json"),
-    device: torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
-    trial: optuna.trial._trial.Trial)->float:
+    params_fp: Path = Path(config_dir, "params.json"),
+    device: torch.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
+    trial: optuna.trial._trial.Trial = None)->float:
 
     params = Namespace(**load_dict(params_fp))
 
@@ -85,8 +85,8 @@ def objective(
     return performance["overall"][params.eval_metrics]
  
 def train_model(
-    params_fp: Path = Path(config.config_dir, "params.json"),
-    device: torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
+    params_fp: Path = Path(config_dir, "params.json"),
+    device: torch.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     trial: optuna.trial._trial.Trial=None
 )->Dict:
     """Operations for training

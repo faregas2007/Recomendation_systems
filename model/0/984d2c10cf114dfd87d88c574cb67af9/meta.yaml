@@ -1,0 +1,15 @@
+artifact_uri: file:///users/tp/dat/pytorch_practice/flaskapp/model/0/984d2c10cf114dfd87d88c574cb67af9/artifacts
+end_time: 1629110974593
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+name: ''
+run_id: 984d2c10cf114dfd87d88c574cb67af9
+run_uuid: 984d2c10cf114dfd87d88c574cb67af9
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1629110871579
+status: 4
+tags: []
+user_id: dat

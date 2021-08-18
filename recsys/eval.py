@@ -2,10 +2,10 @@ from typing import Dict, List, Tuple
 
 import torch
 
-from sklearn.metrics import precision_reall_fscore_support
+from sklearn.metrics import precision_recall_fscore_support
 from data import *
 from train import *
-from predict import *
+#from predict import *
 
 
 def hit(ng_item, pred_item):
@@ -90,14 +90,14 @@ def get_metrics(
     return metrics
 
 def evaluate(
-    params_fp: Path = Path(config.config_dir, "params.json"),
     model,
     dataloader: torch.utils.data.DataLoader,
+    params_fp: Path = Path(config_dir, "params.json"),
+    device: torch.device = torch.device("cpu"),
     #device: torch.device("cuda:0" if torch.cuda.is_available else "cpu"),
     #trial: None,
 
     #artifacts: Dict,
-    device: torch.device = torch.device("cpu")
 )->Tuple:
     """Evaluate performance on data.
 

@@ -14,13 +14,14 @@ model_dir = Path(base_dir, "model")
 stores_dir = Path(base_dir, "stores")
 
 # Local stores
+model_registry = Path(stores_dir , "model")
 
 # Create dirs
 logs_dir.mkdir(parents=True, exist_ok=True)
 data_dir.mkdir(parents=True, exist_ok=True)
 model_dir.mkdir(parents=True, exist_ok=True)
 stores_dir.mkdir(parents=True, exist_ok=True)
-feature_store.mkdir(parents=True, exist_ok=True)
+#feature_store.mkdir(parents=True, exist_ok=True)
 model_registry.mkdir(parents=True, exist_ok=True)
 
 

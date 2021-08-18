@@ -142,10 +142,10 @@ class Trainer(object):
         return best_val_loss, best_model
 
 def train(
-    params_fp: Path=Path(config.config_dir, "params.json"),
+    params_fp: Path=Path(config_dir, "params.json"),
     #train_dataloader: torch.utils.data.DataLoader,
     #val_dataloader: torch.utils.data.DataLoader,
-    device: torch.device('cuda:0' if torch.cuda.is_available() else "cpu"),
+    device: torch.device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu"),
     trial: optuna.trial._trial.Trial = None)->Tuple:
 
     params = Namespace(**utils.load_dict(params_fp))

@@ -3,10 +3,10 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-from numpy as np
+import numpy as np
 from scipy.sparse import rand as sprand
 
-import argparse import Namespace
+from argparse import Namespace
 from typing import List
 
 from utils import *
@@ -92,7 +92,7 @@ class mfpt(nn.Module):
 def initialize_model(
     n_users: int,
     n_tems: int,
-    params_fp: Path = Path(config.config_dir, "params.json"),
+    params_fp: Path = Path(config_dir, "params.json"),
     device: torch.device = torch.device('cpu')
     )-> nn.Module:
 
@@ -106,7 +106,7 @@ def initialize_model(
         n_users = int(n_users),
         n_items = int(n_items),
         n_factors = int(params.n_factors),
-        dropout_p = int(params.dropout_p)
+        dropout_p = float(params.dropout_p)
     )
 
     model = model.to(device)
