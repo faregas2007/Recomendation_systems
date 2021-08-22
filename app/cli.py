@@ -1,5 +1,6 @@
 import typer
 import json
+import tempfile
 import warnings
 import torch
 import pandas as pd
@@ -43,7 +44,7 @@ def optimize(
     )
 
     # all trials
-    print("Best value"+ str(params.eval_metrics)+":%s"%{study.best_trial.value})
+    print("Best value "+ str(params.eval_metrics)+":%s"%{study.best_trial.value})
     params = {**params.__dict__, **study.best_trial.params}
     #params['threshold'] = study.best_trial.user_attrs['threshold']
     utils.save_dict(params, params_fp, cls=NumpyEncoder)
@@ -51,9 +52,9 @@ def optimize(
 
 
 @app.command()
-def train_model(
+def train_model_app(
     params_fp: Path = Path(config.config_dir, "params.json"),
-    model_dir: Path = Path(config.config_dir, "model"),
+    model_dir: Path = Path(config.model_dir),
     experiment_name: Optional[str] = "best",
     run_name: Optional[str] = "model"
     )->None:
@@ -67,6 +68,8 @@ def train_model(
     """
 
     params = Namespace(**utils.load_dict(params_fp))
+    # end active mlflow run (if there is one)
+    
 
     # start run
     mlflow.set_experiment(experiment_name=experiment_name)
@@ -75,7 +78,7 @@ def train_model(
 
         # train
         # notice that there is no trail. 
-        artifacts = train_model(params_fp=params_fp)
+        artifacts = main.train_model(params_fp=params_fp)
 
         # Log metrics
         performance = artifacts['performance']
@@ -91,14 +94,16 @@ def train_model(
 
         mlflow.log_metrics(metrics)
 
-        # log artifacts
+        # log artifacts stored inside stores/model
         with tempfile.TemporaryDirectory() as dp:
-            save_dict(vars(artifacts['params']), Path(dp, "params.json"), cls=NumpyEncoder)
-            save_dict(performance, Path(dp, "performance.json"))
+            utils.save_dict(vars(artifacts['params']), Path(dp, "params.json"), cls=NumpyEncoder)
+            utils.save_dict(performance, Path(dp, "performance.json"))
             torch.save(artifacts['model'].state_dict(), Path(dp, "model.pt"))
             mlflow.log_artifacts(dp)
         mlflow.log_params(vars(artifacts['params']))
+    
 
-        open(Path(model_dir, "run_id.txt"), 'w').write(run_id)
-        save_dict(vars(params), Path(model_dir, "params.json"), cls=NumpyEncoder)
-        save_dict(vars(params), Path(model_dir, "performance.json"))
+    # save for the repo model
+    open(Path(model_dir, "run_id.txt"), 'w').write(run_id)
+    utils.save_dict(vars(params), Path(model_dir, "params.json"), cls=NumpyEncoder)
+    utils.save_dict((performance), Path(model_dir, "performance.json"))

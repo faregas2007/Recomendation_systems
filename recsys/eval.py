@@ -126,7 +126,6 @@ def evaluate(
     y_pred = binary_feedback(y_pred, params.threshold)
     performance = {}
     performance = get_metrics(model, dataloader, params.top_k, y_true, y_pred, device) 
-    
 
     return performance
 
