@@ -6,7 +6,7 @@ import mlflow
 
 
 # Directories
-base_dir = Path(os.getcwd()).parent.absolute()
+base_dir = Path(os.getcwd()).absolute()
 config_dir = Path(base_dir, "config")
 logs_dir = Path(base_dir, "logs")
 data_dir = Path(base_dir, "data")

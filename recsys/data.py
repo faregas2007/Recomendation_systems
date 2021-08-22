@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+from argparse import Namespace
+
 
 class RCDataset(torch.utils.data.Dataset):
     def __init__(self, user_list, item_list, rating_list):
@@ -23,9 +25,12 @@ class RCDataset(torch.utils.data.Dataset):
         )
 
 class RCDataloader(object):
-    def __init__(self, params, ratings):
+    def __init__(self, 
+        params: Namespace, 
+        ratings):
         self.ratings = ratings
-        self.batch_size = params.batch_size
+        self.params = params
+        self.batch_size = self.params.batch_size
         self.train_ratings, self.test_ratings = self._leave_one_out(self.ratings)
 
     def _leave_one_out(self, ratings):
@@ -52,7 +57,7 @@ class RCDataloader(object):
             rating_list = ratings
         )
 
-        return torch.utils.DataLoader(dataset, batch_size = self.batch_size, shuffle=True, num_workers=params.num_workers)
+        return torch.utils.data.DataLoader(dataset, batch_size = self.batch_size, shuffle=True, num_workers= self.params.num_workers)
     
     def get_test_set(self):
         users, items, ratings= [], [], []
@@ -64,12 +69,12 @@ class RCDataloader(object):
             ratings.append(float(row.rating))
         
         dataset = RCDataset(
-            users_list = users,
+            user_list = users,
             item_list = items,
             rating_list = ratings
         )
 
-        return torch.utils.DataLoader(dataset, batch_size=self.batch_size, shuffle=True, num_workers=params.num_workers)
+        return torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.params.num_workers)
 
     
     

@@ -1,7 +1,9 @@
+import os
 import json
 import torch
 from typing import Dict, List
 
+import mlflow
 import numpy as np
 import pandas as pd
 
@@ -41,7 +43,7 @@ def load_dict(filepath: str) -> Dict:
     A dictionary with the loaded JSON data
   """
   with open(filepath, 'r') as fp:
-    d = json.loads(fp)
+    d = json.load(fp)
   return d
 
 
@@ -52,5 +54,16 @@ def save_dict(
     sortkeys: bool=False)->None:
     with open(filepath, 'w') as fp:
         json.dump(d, indent=2, fp=fp, cls=cls, sort_keys=sortkeys)
+
+
+def delete_experiment(experiment_name: str):
+  """Delete an experiment with anme 'experiment'
+  Args:
+    experiment_name (str): Name of the experiment.
+  """
+
+  client = mlflow.tracking.MlflowClient()
+  experiment_id = client.get_experiment_by_name(experiment_name).experiment_id
+  client.delete_experiment(experiment_id=experiment_id)
         
 

@@ -1,11 +1,16 @@
+from pathlib import Path
+from argparse import Namespace
 from typing import Dict, List, Tuple
+import numpy as np
 
 import torch
 
 from sklearn.metrics import precision_recall_fscore_support
-from data import *
-from train import *
+#from data import *
+#from train import *
 #from predict import *
+from recsys import train, data, config, utils
+
 
 
 def hit(ng_item, pred_item):
@@ -92,7 +97,7 @@ def get_metrics(
 def evaluate(
     model,
     dataloader: torch.utils.data.DataLoader,
-    params_fp: Path = Path(config_dir, "params.json"),
+    params_fp: Path = Path(config.config_dir, "params.json"),
     device: torch.device = torch.device("cpu"),
     #device: torch.device("cuda:0" if torch.cuda.is_available else "cpu"),
     #trial: None,
@@ -109,7 +114,7 @@ def evaluate(
     Returns:
         Grouth truth ratings and predicted labels/ratings, performance/other metrics
     """
-    params = Namespace(**load_dict(params_fp))
+    params = Namespace(**utils.load_dict(params_fp))
     
     metrics = {"overall":{}}
 

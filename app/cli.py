@@ -1,36 +1,43 @@
 import typer
+import json
+import warnings
 import torch
 import pandas as pd
 
+
 import mlflow
 import optuna
-from optuna.integration.mlflow import MlflowCallback
+from optuna.integration.mlflow import MLflowCallback
 
 from numpyencoder import NumpyEncoder
+from pathlib import Path
+from typing import Dict, Optional
+from argparse import Namespace
 
 from recsys import config, eval, main, utils
 
-warnings.filtterwarnings("ignore")
+warnings.filterwarnings("ignore")
 
 # Typer cli app
 app = typer.Typer()
 
 
-@app.command
+@app.command()
 def optimize(
     params_fp: Path = Path(config.config_dir, "params.json"),
     device: torch.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     study_name: Optional[str]= 'Optimization',
     num_trials: int=10,
 )->None:
-    params = Namespace(**load_dict(params_fp))
+
+    params = Namespace(**utils.load_dict(params_fp))
 
     pruner = optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=5)
     study = optuna.create_study(study_name=study_name, direction='maximize', pruner=pruner)
     mlflow_callback = MLflowCallback(tracking_uri=mlflow.get_tracking_uri(), metric_name=params.eval_metrics)
 
     study.optimize(
-        lambda trial: objective(params_fp=params_fp, device=device, trial=trial),
+        lambda trial: main.objective(trial=trial, params_fp=params_fp, device=device),
         n_trials=params.num_trials, 
         callbacks=[mlflow_callback],
     )
@@ -39,12 +46,12 @@ def optimize(
     print("Best value"+ str(params.eval_metrics)+":%s"%{study.best_trial.value})
     params = {**params.__dict__, **study.best_trial.params}
     #params['threshold'] = study.best_trial.user_attrs['threshold']
-    save_dict(params, params_fp, cls=NumpyEncoder)
+    utils.save_dict(params, params_fp, cls=NumpyEncoder)
     json.dumps(params, indent=2, cls=NumpyEncoder)
 
 
-@app.command
-def train_model_app(
+@app.command()
+def train_model(
     params_fp: Path = Path(config.config_dir, "params.json"),
     model_dir: Path = Path(config.config_dir, "model"),
     experiment_name: Optional[str] = "best",
@@ -59,7 +66,7 @@ def train_model_app(
         run_name (str, optional): Name of the run.
     """
 
-    params = Namespace(**load_dict(params_fp))
+    params = Namespace(**utils.load_dict(params_fp))
 
     # start run
     mlflow.set_experiment(experiment_name=experiment_name)
@@ -68,7 +75,7 @@ def train_model_app(
 
         # train
         # notice that there is no trail. 
-        artifacts = train_model(params_fp=params_fp, device=device)
+        artifacts = train_model(params_fp=params_fp)
 
         # Log metrics
         performance = artifacts['performance']

@@ -7,13 +7,16 @@ import mlflow
 import optuna
 import numpy as np
 import torch
+import warnings
 
-from models import *
-from train import *
-from eval import *
-from data import *
-from utils import *
-from config import *
+#from models import *
+#from train import *
+#from eval import *
+#from data import *
+#from utils import *
+#from config import *
+
+from recsys import models, train, eval, data, utils, config, eval
 
 def load_artifacts(
     run_id: str, 
@@ -58,11 +61,12 @@ def load_artifacts(
 
 
 def objective(
-    params_fp: Path = Path(config_dir, "params.json"),
-    device: torch.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
-    trial: optuna.trial._trial.Trial = None)->float:
+    trial: optuna.trial._trial.Trial, 
+    params_fp: Path = Path(config.config_dir, "params.json"),
+    device: torch.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    )->float:
 
-    params = Namespace(**load_dict(params_fp))
+    params = Namespace(**utils.load_dict(params_fp))
 
     params.dropout_p = trial.suggest_uniform("dropout_p", 0.3, 0.8)
     params.lr = trial.suggest_loguniform("lr", 1e-5, 1e-4)
@@ -85,7 +89,7 @@ def objective(
     return performance["overall"][params.eval_metrics]
  
 def train_model(
-    params_fp: Path = Path(config_dir, "params.json"),
+    params_fp: Path = Path(config.config_dir, "params.json"),
     device: torch.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     trial: optuna.trial._trial.Trial=None
 )->Dict:
@@ -137,7 +141,7 @@ def train_model(
     }
 
     device = torch.device("cpu")
-    performance = evaluate(
+    performance = eval.evaluate(
         params_fp=params_fp,
         model = best_model,
         dataloader=test_dataloader,

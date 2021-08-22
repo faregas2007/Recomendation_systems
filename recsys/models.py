@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -9,9 +11,10 @@ from scipy.sparse import rand as sprand
 from argparse import Namespace
 from typing import List
 
-from utils import *
-from models import *
-from config import *
+#from utils import *
+#from config import *
+
+from recsys import utils, config
 
 class mfpt(nn.Module):
     def __init__(self, 
@@ -43,7 +46,7 @@ class mfpt(nn.Module):
 
         self.dropout = nn.Dropout(p=self.dropout_p)
         self.users_biases = torch.nn.Embedding(num_embeddings=self.n_users, embedding_dim=1, sparse=True)
-        self.item_biases = torch.nn.Embedding(num_embeddings=self.n_users, embedding_dim=1, sparse=True)
+        self.items_biases = torch.nn.Embedding(num_embeddings=self.n_items, embedding_dim=1, sparse=True)
         self.user_factors = torch.nn.Embedding(num_embeddings=self.n_users, embedding_dim=self.n_factors, sparse=True)
         self.item_factors = torch.nn.Embedding(num_embeddings=self.n_items, embedding_dim=self.n_factors, sparse=True)
 
@@ -52,7 +55,6 @@ class mfpt(nn.Module):
         Forward pass through the model. For a single user and item, this
         looks like:
 
-        user_bias + item_bias + user_embeddings.dot(item_embeddings)
 
         Parameters
         ----------
@@ -70,10 +72,11 @@ class mfpt(nn.Module):
         user_embedding = self.user_factors(user).float()
         item_embedding = self.item_factors(item).float()
 
-        preds = self.user_biases(user).float()
-        preds += self.item_biases(item).float()
+        preds = self.users_biases(user).float()
+        preds += self.items_biases(item).float()
 
-        preds += ((self.dropout(user_embedding)*self.dropout(item_embedding)).sum(dim=1, keepdim=True))
+        preds += torch.mul(self.dropout(user_embedding), self.dropout(item_embedding)).sum(dim=1, keepdim=True)
+        #preds += ((self.dropout(user_embedding)*self.dropout(item_embedding)).sum(dim=1, keepdim=True))
         return preds.reshape(-1).squeeze()
     
     def get_factors(self, users, items):
@@ -91,12 +94,12 @@ class mfpt(nn.Module):
 
 def initialize_model(
     n_users: int,
-    n_tems: int,
-    params_fp: Path = Path(config_dir, "params.json"),
+    n_items: int,
+    params_fp: Path = Path(config.config_dir, "params.json"),
     device: torch.device = torch.device('cpu')
     )-> nn.Module:
 
-    params = Namespace(**utls.load_dict(params_fp))                               
+    params = Namespace(**utils.load_dict(params_fp))                               
                                              
     #dataset = utils.get_data()
     #n_users = dataset['user_id'].nunique() + 1

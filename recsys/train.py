@@ -16,15 +16,17 @@ from pathlib import Path
 import tempfile
 import json
 
-from utils import *
-from config import *
-from data import *
-from models import *
+#from utils import *
+#from config import *
+#from data import *
+#from models import *
+
+from recsys import utils, config, data, models, eval
 
 class Trainer(object):
     def __init__(self, 
         model, 
-        device, 
+        device: torch.device=torch.device("cuda" if torch.cuda.is_available() else "cpu"), 
         loss_fn=None, 
         optimizer=None, 
         scheduler= None, 
@@ -43,9 +45,9 @@ class Trainer(object):
 
         size = len(dataloader.dataset)
         for batch, (user, item, label) in enumerate(dataloader):
-            user = user.to(device)
-            item = item.to(device)
-            label = label.to(device)
+            user = user.to(self.device)
+            item = item.to(self.device)
+            label = label.to(self.device)
             # forward
             self.optimizer.zero_grad()
             prediction = self.model(user, item)
@@ -54,6 +56,7 @@ class Trainer(object):
             loss = self.loss_fn(prediction, label)
             loss.backward()
             self.optimizer.step()
+
             loss += loss.item() - loss
 
         return loss
@@ -127,9 +130,9 @@ class Trainer(object):
                     raise optuna.TrialPruned()
 
             # Tracking
-            mlflow.log_metrics(
-                {'train_loss':train_loss, 'val_loss':val_loss}, step=epoch
-            )
+            #mlflow.log_metrics(
+            #    {'train_loss':train_loss, 'val_loss':val_loss}, step=epoch
+            #)
 
             # Logging
             print(
@@ -142,7 +145,7 @@ class Trainer(object):
         return best_val_loss, best_model
 
 def train(
-    params_fp: Path=Path(config_dir, "params.json"),
+    params_fp: Path=Path(config.config_dir, "params.json"),
     #train_dataloader: torch.utils.data.DataLoader,
     #val_dataloader: torch.utils.data.DataLoader,
     device: torch.device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu"),
