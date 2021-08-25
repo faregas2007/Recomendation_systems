@@ -3,8 +3,8 @@
 # make rating matrix, becomes binary feedback (0,1) for better training accuracy -- check
 # add more metric for training, evaluation. Using mlflow to track hyper-parameter training -- check
 # write the database using sqlalchemy, dataset = movielens. 
-# scrawling from IMDB using beautifulsoup. Same format, user_id, item_id, rating_id, timestamp, titles, genres. 
-# data drifting between movielines 100k and IMDB dataset
+# update feedback data from user and stored inside feature_store. Same format, user_id, item_id, rating_id, timestamp, titles, genres. 
+# data drifting between movielines 100k and scarping IMDB dataset
 
 # more models: implicit feedback, bayesian ranking, testing metrics performance between models.
 # validations handling/logger into the dataset.

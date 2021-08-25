@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Dict, Optional
 from argparse import Namespace
 
-from recsys import config, eval, main, utils
+from recsys import config, eval, main, utils, predicts
 
 warnings.filterwarnings("ignore")
 
@@ -107,3 +107,44 @@ def train_model_app(
     open(Path(model_dir, "run_id.txt"), 'w').write(run_id)
     utils.save_dict(vars(params), Path(model_dir, "params.json"), cls=NumpyEncoder)
     utils.save_dict((performance), Path(model_dir, "performance.json"))
+
+
+@app.command()
+def recommendation(
+    item_id: int,
+    top_k: int,
+    run_id: str = open(Path(config.model_dir, "run_id.txt")).read()
+    )->Dict:
+    """Top k item recommendation from the best experiments
+    
+    Args:
+        item_id: item_id from feed_back from user
+        artifacts: load from the best exeriments.
+    Return:
+        return top_k recommended items
+    """
+
+    artifacts = main.load_artifacts(run_id=run_id)
+    recommends = predicts.item_recommendations(item_id=item_id, top_k=top_k, artifacts=artifacts)
+
+    return recommends
+
+@app.command()
+def predict(
+    dataset: torch.utils.data.Dataset = utils.get_data(),
+    run_id: str = open(Path(config.model_dir, "run_id.txt")).read() 
+    )->Dict:
+    """Inference with a new dataset using best params in the best experiment
+
+    Args:
+        dataset: batch dataset stored in feature_store
+        run_id: run_id of the best_experiment
+    
+    Return:
+        binary feed_back of predicted ratings, grouth_truth ratings and performance metrics
+    """
+    
+    artifacts = main.load_artifacts(run_id=run_id)
+    prediction = predicts.predict(artifacts=artifacts, dataset=dataset)
+    return prediction
+

@@ -19,7 +19,7 @@ import warnings
 from recsys import models, train, eval, data, utils, config, eval
 
 def load_artifacts(
-    run_id: str, 
+    run_id: str = open(Path(config.model_dir, "run_id.txt")).read(), 
     device: torch.device = torch.device('cuda:0' if torch.cuda.is_available() else "cpu"),
 )->Dict:
     """Load artifacts for current model
@@ -33,28 +33,26 @@ def load_artifacts(
     """
 
     dataset = utils.get_data()
-    n_users = dataset['n_users'].nunique() + 1
-    n_items = dataset['n_items'].nunique() + 1
-
-    device = torch.device('cude:0' if cuda.is_available() else "cpu")
+    n_users = dataset['user_id'].nunique() + 1
+    n_items = dataset['item_id'].nunique() + 1
 
     artifact_uri = mlflow.get_run(run_id=run_id).info.artifact_uri.split("file://")[-1]
     params = Namespace(**utils.load_dict(filepath=Path(artifact_uri, 'params.json')))
     model_state = torch.load(Path(artifact_uri, "model.pt"), map_location=device)
     performance = utils.load_dict(filepath=Path(artifact_uri, "performance.json"))
-
+    
     # Inititalize model
     model = models.initialize_model(
-        n_users= n_users,
-        n_itens = n_items,
-        params = params,
+        n_users=  n_users,
+        n_items = n_items,
+        params_fp = Path(artifact_uri, "params.json"),
         device = device
     )
 
     model.load_state_dict(model_state)
 
     return {
-        "params": parmas,
+        "params": params,
         "model": model,
         "performance": performance,
     }

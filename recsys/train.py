@@ -50,7 +50,7 @@ class Trainer(object):
             label = label.to(self.device)
             # forward
             self.optimizer.zero_grad()
-            prediction = self.model(user, item)
+            prediction = self.model.predict(user, item)
 
             # backward
             loss = self.loss_fn(prediction, label)
@@ -71,7 +71,7 @@ class Trainer(object):
 
         with torch.no_grad():
             for  batch, (user, item, label) in enumerate(dataloader):
-                prediction = self.model(user, item)
+                prediction = self.model.predict(user, item)
                 
                 J = self.loss_fn(prediction, label).item()
 
@@ -96,7 +96,7 @@ class Trainer(object):
         with torch.no_grad():
             for batch, (user, item, label) in enumerate(dataloader):
                 # Forward pass w/ inputs
-                prediction = self.model(user, item)
+                prediction = self.model.predict(user, item)
 
                 prediction = prediction.numpy()
                 predictions.extend(prediction)

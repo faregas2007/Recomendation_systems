@@ -1,13 +1,11 @@
 from pathlib import Path
 from setuptools import setup
 
-base_dir = '/users/tp/dat/Recomendation_systems/'
-print(base_dir)
-with open(base_dir + 'requirements.txt') as f:
+with open('requirements.txt') as f:
     required_packages = [ln.strip() for ln in f.readlines()]
 
 def readme():
-    with open(base_dir + 'README.md') as f:
+    with open('README.md') as f:
         return f.read()
 
 dev_packages=[
@@ -25,6 +23,7 @@ setup(
     name='recsys',
     version='0.1',
     description='recommendation system with MLOps',
+    long_description=readme(),
     classifiers=[
         'Development Status :: 3 - Alpha',
         "Intended Audience :: Developers",
@@ -35,9 +34,11 @@ setup(
     author="Tien Dat Nguyen",
     author_email="faregas2007@gmail.com",
     license='MIT',
-    packages=['recsys'],
-    install_requires= [required_packages],
+    url="https://github.com/faregas2007/Recomendation_systems.git",
 
+    packages=['recsys'],
+    python_requires=">=3.6",
+    install_requires= [required_packages],
     extras_require={
         'dev': dev_packages + docs_packages,
         'docs': docs_packages,
