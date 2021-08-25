@@ -1,15 +1,16 @@
 # Recomendation_systems
-A simple recommendation system use matrix-factormization to extract latent features and cosine-similarity for topk ranking
+A simple recommendation system uses matrix-factorization to extract latent features and topk ranking based on the predicted ratings.
 # Install:
-create virtual enviroment
 
+create virtual enviroment
 pip install --user .
 
 # Usage:
+
 from app import cli
 
 cli.optimize()
-
-or 
-
-cli.train_model()
+cli.train_model_app()
+cli.predict()
+or
+recomended = cli.recommendation(item_id=item_id, top_k=top_k)
