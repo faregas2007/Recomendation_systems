@@ -3,6 +3,7 @@ A simple recommendation system uses matrix-factorization to extract latent featu
 # Install:
 
 create virtual enviroment
+
 pip install --user .
 
 # Usage:
@@ -10,7 +11,11 @@ pip install --user .
 from app import cli
 
 cli.optimize()
+
 cli.train_model_app()
+
 cli.predict()
+
 or
-recomended = cli.recommendation(item_id=item_id, top_k=top_k)
+
+cli.recommendation(item_id=item_id, top_k=top_k)
