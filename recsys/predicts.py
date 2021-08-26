@@ -16,7 +16,7 @@ def predict(
     
     Args:
         artifacts: call from the best experiment
-        dataloader: inference dataloader
+        dataloader: inference/production/feature_store dataloader
         device: device
 
     Return:
@@ -27,8 +27,8 @@ def predict(
     model = artifacts["model"]
     
     # the dataset need to be change to batch data stored inside feature_store.
-    # dataloader --> need to have create_dataloader, instead of train and test dataloader --> to do list.
-    # for inference --> To do list. 
+    # dataloader --> need to have a create_dataloader, instead of train and test dataloader --> to do list.
+    # for inference --> to do list. 
     dataloader = data.RCDataloader(params, dataset)
     dataloader = dataloader.get_test_set()
 
@@ -65,7 +65,7 @@ def item_recommendations(
     dataset = utils.get_data()
 
     # the dataset need to be change data stored inside database.
-    # dataloader --> need to have create_dataloader, instead of train and test dataloader --> to do list.
+    # dataloader --> need to have a create_dataloader, instead of train and test dataloader --> to do list.
     # for inference --> To do list. 
     dataloader = data.RCDataloader(params, dataset)
     dataloader = dataloader.get_test_set()

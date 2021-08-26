@@ -5,3 +5,16 @@ requires = [
 ]
 
 build-backend = "setuptools.build_meta"
+
+# Pytest
+[tool.pytest.ini.options]
+testpaths=["tests"]
+python_files="test_*.py"
+addopts="--strict-markers --disable-pytest-warnings"
+markers = [
+    "training: tes that involve training"
+]
+
+# Pytest
+[tool.coverage.run]
+omit = ["app/main.py"]

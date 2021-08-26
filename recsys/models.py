@@ -93,8 +93,8 @@ class mfpt(nn.Module):
 
 
 def initialize_model(
-    n_users: int,
-    n_items: int,
+    n_users: int=utils.get_data()["user_id"].nunique() + 1,
+    n_items: int=utils.get_data()["item_id"].nunique() + 1,
     params_fp: Path = Path(config.config_dir, "params.json"),
     device: torch.device = torch.device('cpu')
     )-> nn.Module:
@@ -106,10 +106,10 @@ def initialize_model(
     #n_items = dataset['item_id'].nunique() + 1
                                              
     model = mfpt(
-        n_users = int(n_users),
-        n_items = int(n_items),
-        n_factors = int(params.n_factors),
-        dropout_p = float(params.dropout_p)
+        n_users = n_users,
+        n_items = n_items,
+        n_factors = params.n_factors,
+        dropout_p = params.dropout_p
     )
 
     model = model.to(device)

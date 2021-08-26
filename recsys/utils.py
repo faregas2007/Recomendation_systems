@@ -1,4 +1,5 @@
 import os
+import random
 import json
 import torch
 from typing import Dict, List
@@ -55,6 +56,18 @@ def save_dict(
     with open(filepath, 'w') as fp:
         json.dump(d, indent=2, fp=fp, cls=cls, sort_keys=sortkeys)
 
+
+def set_seed(seed: int=1234)->None:
+  """Set seed for reproducibility
+
+  Args:
+    seed (int, optional): number to use as the seed. Default to 1234
+  """
+  np.random.seed(seed)
+  random.seed(seed)
+  torch.manual_seed(seed)
+  torch.cuda.manual_seed(seed)
+  torch.cuda.manual_seed_all(seed) # multi-GPU
 
 def delete_experiment(experiment_name: str):
   """Delete an experiment with anme 'experiment'
