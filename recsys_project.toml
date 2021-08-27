@@ -12,7 +12,7 @@ testpaths=["tests"]
 python_files="test_*.py"
 addopts="--strict-markers --disable-pytest-warnings"
 markers = [
-    "training: tes that involve training"
+    "training: test that involve training"
 ]
 
 # Pytest

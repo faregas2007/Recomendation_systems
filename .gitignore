@@ -3,3 +3,17 @@
 /*.egg-info
 
 /htmlcov/
+
+__pycache__/
+
+# pytest
+htmlcov/
+.coverage
+.coverage*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis
+.pytest_cache/

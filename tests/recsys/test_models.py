@@ -6,14 +6,18 @@ import torch
 from recsys import models, utils, config, data
 
 class Testmfpt:
-    """
+    
     def setup_method(self):
         #Called before every method
         # Params, n_users and n_items are in the dataset.
-        self.n_users = 944,
-        self.n_items = 1683,
-        self.n_factors = 20,
+        self.n_users = 944
+        self.n_items = 1683
+        self.n_factors = 20
         self.dropout_p = 1e-3
+        self.device = torch.device("cpu")
+        self.params_fp = "/users/tp/dat/Recomendation_systems/config/parmas.json"
+        self.user = torch.tensor([1,2])
+        self.item = torch.tensor([1,2])
         params = Namespace(
             n_users = self.n_users,
             n_items = self.n_items,
@@ -24,8 +28,10 @@ class Testmfpt:
         # model
         utils.set_seed()
         self.mfpt = models.initialize_model(
-            n_users = self.n_users,
-            n_items = self.n_items
+            n_users = int(self.n_users),
+            n_items = int(self.n_items),
+            params_fp = str(Path(config.config_dir, "params.json")),
+            device = torch.device("cpu")
         )
 
     def teardown_method(self):
@@ -40,20 +46,22 @@ class Testmfpt:
             n_factors = self.n_factors,
             dropout_p = self.dropout_p
         )
-        for params1, params2 in zip(self.model.parameters(), model.parameters()):
-            assert not param1.data.ne(param2.data).sum()>0
+        for params1, params2 in zip(model.parameters(), self.mfpt.parameters()):
+            assert not params1.data.ne(params2.data).sum()>0
         assert self.mfpt.n_factors == model.n_factors
 
     def test_init(self):
-        assert self.model.user_factors.shape == (self.n_users, self.n_factors)
-        assert self.model.item_factors.shape == (self.n_items, self.n_factors)
-        assert self.model.users_biases.shape == (self.n_users, 1)
-        assert self.model.items_biases.shape == (self.n_items, 1)
+        assert tuple(self.mfpt.user_factors(self.user).shape) == (self.user.shape[0], self.n_factors)
+        assert tuple(self.mfpt.item_factors(self.item).shape) == (self.item.shape[0], self.n_factors)
+        assert tuple(self.mfpt.users_biases(self.user).shape) == (self.user.shape[0], 1)
+        assert tuple(self.mfpt.items_biases(self.item).shape) == (self.item.shape[0], 1)
 
     def test_forward(self):
-        user = torch.tensor([12])
-        item = torch.tensor([12])
-        z = self.mfpt.forward(user, item)
-        assert z.shape == (len(user), len(item))
-    """
-    pass
+        assert len(self.user) == len(self.item)
+        z = self.mfpt.forward(self.user, self.item)
+        assert len(z) == 2
+
+    def test_get_factors(self):
+        user_embedding, item_embedding = self.mfpt.get_factors(self.user, self.item)
+        assert tuple(user_embedding.shape) == (len(self.user), self.n_factors) 
+        assert tuple(item_embedding.shape) == (len(self.item), self.n_factors)
