@@ -1,32 +1,28 @@
 import shutil
 from pathlib import Path
 
+import pandas as pd
+from argparse import Namespace
+
 import pytest
 from typer.testing import CliRunner
 
 from app.cli import app
 from recsys import utils, config
 
+import torch
+
 runner = CliRunner()
 
-@pytest.mark.training
 def test_optimize():
-    study_name = "test_optimization"
-    result = runner.invoke(app,
-        [
-            "optimize",
-            "--params-fp",
-            f"{Path(config.config_dir, 'test_params.json')}",
-            "--study-name",
-            f"{study_name}",
-            "--num_trials",
-            1,
-        ],
-    )
+    pass
 
-    assert result.exit_code == 0
-    assert "Trial 0" in result.stdout
+def test_train_model_app():
+    pass
 
-    # delete study
-    utils.delete_experiment(experiment_name=study_name)
-    shutil.rmtree(Path(config.model_registry, ".trash"))
+def test_recommendation():
+    pass
+
+def test_predict():
+    pass
+

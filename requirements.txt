@@ -11,3 +11,4 @@ json==2.0.9
 fastapi==0.68.0
 typer==0.3.2
 numpyencoder==0.3.0
+pytest==6.2.4

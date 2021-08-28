@@ -26,9 +26,8 @@ app = typer.Typer()
 @app.command()
 def optimize(
     params_fp: Path = Path(config.config_dir, "params.json"),
-    device: torch.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
-    study_name: Optional[str]= 'Optimization',
-    num_trials: int=10,
+    study_name: Optional[str]= 'optimization',
+    num_trials: int=10
 )->None:
 
     params = Namespace(**utils.load_dict(params_fp))
@@ -38,7 +37,7 @@ def optimize(
     mlflow_callback = MLflowCallback(tracking_uri=mlflow.get_tracking_uri(), metric_name=params.eval_metrics)
 
     study.optimize(
-        lambda trial: main.objective(trial=trial, params_fp=params_fp, device=device),
+        lambda trial: main.objective(trial=trial, params_fp=params_fp),
         n_trials=params.num_trials, 
         callbacks=[mlflow_callback],
     )
