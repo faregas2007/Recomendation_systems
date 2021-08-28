@@ -7,10 +7,10 @@ from typing import Dict, List
 import mlflow
 import numpy as np
 import pandas as pd
-
+from recsys import config
 
 def get_data():
-    os.chdir('/users/tp/dat/pytorch_practice/flaskapp/ml-100k')
+    os.chdir(config.dataset_dir)
     movie_data = pd.read_csv('u.data', sep='\t', names = ['user_id', 'item_id', 'rating', 'timestamp'], encoding='latin-1')
     icols = ['movie_id', 'movie_title', 'release_date', 'video release date', 'IMDb URL', 'unknown', 'Action', 'Adventure', 'Animation', 'Children\s', 'Comedy', 'Crime', 'Documentary', 'Drama', 'Fantasy', 'Flim-Noir', 'Horror', 'Musical', 'Mystery', 'Romance', 'Sci-Fi', 'Thriller', 'War', 'Western']
     title_data = pd.read_csv('u.item', sep='|', names = icols, encoding='latin-1')

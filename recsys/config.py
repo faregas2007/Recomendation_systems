@@ -12,6 +12,7 @@ logs_dir = Path(base_dir, "logs")
 data_dir = Path(base_dir, "data")
 model_dir = Path(base_dir, "model")
 stores_dir = Path(base_dir, "stores")
+dataset_dir = Path(base_dir, "ml-100k")
 
 # Local stores
 model_registry = Path(stores_dir , "model")
