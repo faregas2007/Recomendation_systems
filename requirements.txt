@@ -7,7 +7,6 @@ flask==1.1.4
 optuna==2.9.1
 mlflow==1.19.0
 argparse==1.1
-json==2.0.9
 fastapi==0.68.0
 typer==0.3.2
 numpyencoder==0.3.0
