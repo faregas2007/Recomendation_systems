@@ -20,4 +20,4 @@ coverage.xml
 .hypothesis
 .pytest_cache/
 
-__init__.py
+__init__.pg
