@@ -5,6 +5,8 @@
 /htmlcov/
 
 __pycache__/
+*.py[cod]
+*Spy.class
 
 # pytest
 htmlcov/
@@ -17,3 +19,6 @@ coverage.xml
 *.py,cover
 .hypothesis
 .pytest_cache/
+
+__init__.py
+__init__.pyc
