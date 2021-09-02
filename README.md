@@ -7,7 +7,10 @@ A simple recommendation system uses matrix-factorization to extract latent featu
 
 create virtual enviroment
 
-pip install --user .
+virttualenv env
+source env/bin/activate
+
+pip install .
 
 # Usage:
 
@@ -25,4 +28,6 @@ cli.recommendation(item_id=item_id, top_k=top_k)
 
 # FastAPI:
 
-uvicorn app.api.main:app --host 0.0.0.0 --port 5000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload
+
+Follow the link http://0.0.0.0:8000 then add /docs after it. Have fun to play around with fastapi-UI !!! 
