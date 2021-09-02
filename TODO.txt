@@ -2,14 +2,16 @@
 # write the topk function and return topk movie recmmendation --> check
 # make rating matrix, becomes binary feedback (0,1) for better training accuracy -- check
 # add more metric for training, evaluation. Using mlflow to track hyper-parameter training -- check
-# write the database using sqlalchemy, dataset = movielens. 
+# write the database using sqlalchemy, dataset = movielens --> check
 # update feedback data from user and stored inside feature_store. Same format, user_id, item_id, rating_id, timestamp, titles, genres. 
 # data drifting between movielines 100k and scarping IMDB dataset
 
 # more models: implicit feedback, bayesian ranking, testing metrics performance between models.
 # validations handling/logger into the dataset.
-# unit_testing for recsys and app
-# CI/CD to cloud service for computing, azureml, gcp, aws ...
+# logging systems for recsys
+# unit_testing for recsys and app --> half done. 
+# CI/CD git action on testing --> check
+# deploy to cloud service, azureml, gcp, aws ...
 
 # create the train pipeline --> check 
 # create the ranking pipeline from best_run in best experiment. Using Bayesian personalize ranking.

@@ -12,7 +12,6 @@ from sklearn.metrics import precision_recall_fscore_support
 from recsys import train, data, config, utils
 
 
-
 def hit(ng_item, pred_item):
     if ng_item in pred_item:
         return 1
@@ -50,7 +49,6 @@ def binary_feedback(ratings, threshold):
     normalize2 = []
 
     # taken ratings as the binary feedback.
-    # based on mean
     # todo: improvement based on k-threshold evaluation. 
     for i in range(len(ratings)):
         normalize2.append(0 if normalize[i] < 0 else 1)

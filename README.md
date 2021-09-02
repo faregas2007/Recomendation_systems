@@ -22,3 +22,7 @@ cli.predict()
 or
 
 cli.recommendation(item_id=item_id, top_k=top_k)
+
+# FastAPI:
+
+uvicorn app.api.main:app --host 0.0.0.0 --port 5000 --reload
