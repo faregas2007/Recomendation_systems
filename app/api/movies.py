@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from typing import List
 
 from app.api.models import Movie
-from recsys.utils import get_data, parse_csv
 from recsys import utils
 
 movies = APIRouter()
