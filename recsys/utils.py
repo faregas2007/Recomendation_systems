@@ -78,5 +78,18 @@ def delete_experiment(experiment_name: str):
   client = mlflow.tracking.MlflowClient()
   experiment_id = client.get_experiment_by_name(experiment_name).experiment_id
   client.delete_experiment(experiment_id=experiment_id)
-        
+
+
+def parse_csv(df: pd.DataFrame):
+  """Parsed dataframe into json format
+
+  Args:
+    df: dataframe in csv file
+
+  Return:
+    json format data for REST api. 
+  """
+  result = df.to_json(orient='records')
+  parsed = json.loads(result)
+  return parsed
 
