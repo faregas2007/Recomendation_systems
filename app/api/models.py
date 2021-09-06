@@ -1,8 +1,11 @@
-from typing import List
-from pydantic import BaseModel
+from sqlalchemy import Table
+from app.api.db import metadata
 
-class Movie(BaseModel):
-    item_id: int
-    rating: int
-    title: str
-    genres: List[str]
+class Movies(Base):
+    __tablename__ = 'movies',
+
+    metadata,
+    id = Column(integer, primary_key=True)
+    item_id = Column(Integer)
+    title = Column(String)
+

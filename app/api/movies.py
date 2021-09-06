@@ -1,36 +1,56 @@
-from fastapi import FastAPI, HTTPException, Header, APIRouter
+from fastapi import FastAPI, HTTPException, Header, APIRouter, Request
 from pydantic import BaseModel
 from typing import List
 
-from app.api.models import Movie
+from app.api.schemas import MovieIn, MovieOut, MovieUpdate
 from recsys import utils
 
-movies = APIRouter()
-movie_db = utils.get_data().head().drop(['user_id', 'IMDb URL', 'timestamp'], axis=1)
+from sqlalchemy.orm import Session
+from .db import session, engine
 
-@movies.get('/', response_model=List[Movie])
-async def index():
-    return utils.parse_csv(movie_db)
+movies = APIRouter()
+
+@app.middleware('http')
+async def db_session_middleware(request: Request, call_next):
+    response = Request('Internal server error', status_code=500)
+    try:
+        request.state.db = session()
+        response = await call_next()
+    finally:
+        request.state_db.close()
+    return respone
+
+# dependencies
+def get_db(request: Request):
+    return request.state.db
+
+@movies.get('/', response_model=List[MovieOut])
+def index(db: Session):
+    return db_manager.get_all_movies(db)
 
 @movies.post('/', status_code=201)
-async def add_movie(payload: Movie):
-    movie = payload.dict()
-    movie_db.append(movie)
-    return {'item_id': len(movie_db['item_id'])-1}
+def add_movie(payload: MovieIn, db: Session=Depends(get_db)):
+    movie_id = db_manager.add_movie(db, payload)
+    response = {
+        'id': movie_id,
+        **payload.dict()
+    }
+    return response
 
 @movies.put('/{item_id}')
-async def update_movie(item_id: int, payload: Movie):
-    movie = payload.dict()
-    movie_length = len(movie_db['item_id'])
-    if 0 <= item_id <= movie_length:
-        movie_db[item_id] = movie
-        return None
-    return HTTPException(status_code=404, detail ="Movie with given item_id not found")
+def update_movie(item_id: int, payload: MovieIn):
+    movie = db_manager.get_movie(db, item_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail='Movie not found')
+    update_data = payload.dict(exclude_unset=True)
+    movie_in_db = MovieIn(**movie)
+
+    updated_movie = movie_in_db.copy(update=update_data)
+    return db_manager.update_movie(item_id, updated_movie)
 
 @movies.delete('/{item_id}')
-async def delete_movie(item_id: int):
-    movies_length = len(movie_db['item_id'])
-    if 0 <= item_id <= movies_length:
-        del movie_db[item_id]
-        return None
-    raise HTTPException(status_code=404, detail="Movie with given item_id not found")
+def delete_movie(item_id: int):
+    movie = db_manager.get_movie(db, item_id)
+    if not movie:
+        raise HTTPException(status_code=404, detail='Movvie not found')
+    return db_manager.delete_movie(db, item_id)
