@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, MetaData, String, Table, ARRAY
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, MetaData
 
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -13,7 +13,7 @@ engine = create_engine(db_uri)
 # using database
 session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
-
+metadata = MetaData()
 # initialize data_base
 movie_db = utils.get_data().head().drop(['user_id', 'IMDb URL', 'timestamp'], axis=1)
 move_data = utils.parse_csv(movie_db)

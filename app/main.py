@@ -1,13 +1,12 @@
 from fastapi import FastAPI
 from app.api.movies import movies
-#from app.api.db import metadata, database, engine
+from app.api.db import engine, session, Base
 
-#metadata.create_all(engine)
-
+Base.metadata.create_all(engine)
 app = FastAPI()
 
-"""
 # problem with connection to database in psycopg2, using default port 5432.
+"""
 @app.on_event('startup')
 async def startup():
     await database.connect()

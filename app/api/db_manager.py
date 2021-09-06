@@ -2,12 +2,13 @@
 #from app.api.schemas import MovieIn, MovieOut, MovieUpdate
 #from app.api.db import Movies
 from app.api.models import Movies
+from app.api.schemas import MovieIn, MovieOut, MovieUpdate
 from sqlalchemy.orm import Session
 
 # without async since sqlalchemy doesn't support await. 
 # without using databases, async def will not be used.
 
-def add_movie (db: Session, payload: Movie):
+def add_movie (db: Session, payload: MovieIn):
     query = Movies.insert().values(**payload.dict())
     return db.execute(query=query)
 
@@ -23,6 +24,6 @@ def delete_movie(db:Session, item_id:int):
     query = Movies.delete().where(Movies.c.item_id==item_id)
     return db.execute(query=query)
 
-def update_movie(db: Session, item_id:int, payload: Movie):
+def update_movie(db: Session, item_id:int, payload: MovieOut):
     query = (Movies.update().where(Movies.c.item_id=item_id).values(**payload.dict()))
     return db.execute(query=query)

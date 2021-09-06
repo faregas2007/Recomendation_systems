@@ -1,12 +1,11 @@
-from fastapi import FastAPI, HTTPException, Header, APIRouter, Request
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Header, APIRouter, Request 
 from typing import List
-
-from app.api.schemas import MovieIn, MovieOut, MovieUpdate
 from recsys import utils
 
+from app.api.schemas import MovieIn, MovieOut, MovieUpdate
+from app.api.db import session, engine
+
 from sqlalchemy.orm import Session
-from .db import session, engine
 
 movies = APIRouter()
 
