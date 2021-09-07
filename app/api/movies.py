@@ -37,7 +37,7 @@ def add_movie(payload: MovieIn, db: Session=Depends(get_db)):
     return response
 
 @movies.put('/{item_id}')
-def update_movie(item_id: int, payload: MovieIn):
+def update_movie(item_id: int, payload: MovieIn, db: Session=Depends(get_db)):
     movie = db_manager.get_movie(db, item_id)
     if not movie:
         raise HTTPException(status_code=404, detail='Movie not found')
@@ -48,7 +48,7 @@ def update_movie(item_id: int, payload: MovieIn):
     return db_manager.update_movie(item_id, updated_movie)
 
 @movies.delete('/{item_id}')
-def delete_movie(item_id: int):
+def delete_movie(item_id: int, db: Session=Depends(get_db)):
     movie = db_manager.get_movie(db, item_id)
     if not movie:
         raise HTTPException(status_code=404, detail='Movvie not found')
