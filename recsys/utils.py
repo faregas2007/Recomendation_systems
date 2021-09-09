@@ -93,3 +93,13 @@ def parse_csv(df: pd.DataFrame):
   parsed = json.loads(result)
   return parsed
 
+def to_array(rows):
+  """Convert sqlalachemy session format into dict format
+
+  Args:
+    rows: rows in sqlalchemy.orm
+  
+  Return:
+    dict format.
+  """
+  return [r.asdict() for r in rows]

@@ -1,37 +1,48 @@
-from fastapi import FastAPI, HTTPException, Header, APIRouter
-from pydantic import BaseModel
+from fastapi import FasAPI, HTTPException, Header, APIRouter, Request, Depends
 from typing import List
 
-from app.api.models import Movie
-from recsys.utils import get_data, parse_csv
+from app.api import schemas, db_manager, db
+
+from sqlalchemy.orm import Session
 from recsys import utils
 
 movies = APIRouter()
-movie_db = utils.get_data().head().drop(['user_id', 'IMDb URL', 'timestamp'], axis=1)
 
-@movies.get('/', response_model=List[Movie])
-async def index():
-    return utils.parse_csv(movie_db)
+def get_db():
+    sess = db.SessionLocal()
+    try:
+        yield sess
+    finally:
+        sess.close()
+
+@movies.get('/', response_model=List[MovieIn])
+def index(sess: Session=Depends(get_db)):
+    return db_manager.get_movies(sess)
 
 @movies.post('/', status_code=201)
-async def add_movie(payload: Movie):
-    movie = payload.dict()
-    movie_db.append(movie)
-    return {'item_id': len(movie_db['item_id'])-1}
+def add_movie(payload: MovieIn, sess: Session=Depends(get_db)):
+    movie_id = db_manager.add_movie(payload, sess)
+    response = {
+        'id': movie_id,
+        **payload.dict()
+    }
+
+    return response
 
 @movies.put('/{item_id}')
-async def update_movie(item_id: int, payload: Movie):
-    movie = payload.dict()
-    movie_length = len(movie_db['item_id'])
-    if 0 <= item_id <= movie_length:
-        movie_db[item_id] = movie
-        return None
-    return HTTPException(status_code=404, detail ="Movie with given item_id not found")
+def update_movie(item_id: int, payload: MovieUpdate, sess: Session=Depends(get_db)):
+    movie = db_manager.get_movies(item_id, sess)
+    if movie is None:
+        raise HTTPException(status_code=404, detail='Movie not found')
+    update_data = payload.dict(exclude_unset=True)
+
+    updated_movie = MovieUpdate(**update_data)
+    return db_manager.update_movie(item_id, updated_movie, sess)
 
 @movies.delete('/{item_id}')
-async def delete_movie(item_id: int):
-    movies_length = len(movie_db['item_id'])
-    if 0 <= item_id <= movies_length:
-        del movie_db[item_id]
-        return None
-    raise HTTPException(status_code=404, detail="Movie with given item_id not found")
+def delete_movie(item_id: int, sess: Session=Depends(get_db)):
+    movie = db_manager.get_movies(item_id, sess)
+    if not movie:
+        raise HTTPException(status_code=404, detail='Movie not found')
+    return db_manager.delete_movie(item_id, sess)
+

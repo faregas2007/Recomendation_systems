@@ -7,7 +7,7 @@ A simple recommendation system uses matrix-factorization to extract latent featu
 
 create virtual enviroment
 
-virttualenv env
+virtualenv env
 
 source ./env/bin/activate
 
