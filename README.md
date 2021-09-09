@@ -9,7 +9,7 @@ create virtual enviroment
 
 virtualenv env
 
-source env/bin/activate
+source ./env/bin/activate
 
 pip install .
 
