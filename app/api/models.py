@@ -1,6 +1,6 @@
 from sqlalchemy import Table, Column, Integer, String
 from app.api.db import engine, Base, session
-from app.api import utils
+from recsys import utils
 
 class Movies(Base):
     __tablename__ = 'Movies'

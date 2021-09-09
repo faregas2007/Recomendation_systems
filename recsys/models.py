@@ -91,6 +91,31 @@ class mfpt(nn.Module):
     def predict(self, users, items):
         return self.forward(users, items)
 
+class BPR(nn.Module):
+    def __init__(self, 
+        n_users: int,
+        n_items: int,
+        n_factors: int):
+
+        super(mfpt, self).__init__()
+
+        self.n_users = n_users
+        self.n_items = n_items
+        self.n_factors = n_factors
+
+        self.user_factors = torch.nn.Embedding(num_embeddings=self.n_users, embedding_dim=self.n_factors, sparse=True)
+        self.item_factors = torch.nn.Embedding(num_embeddings=self.n_items, embedding_dim=self.n_factors, sparse=True)
+
+    def forward(self, user, item_i, item_j):
+        user = self.user_factors(user)
+        item_i = self.item_factors(item_i)
+        item_j = self.item_factors(item_j)
+
+        prediction_i = (user*item_i).sum(dim=1, keepdim=True)
+        prediction_j = (user*item_j).sum(dim=1, keepdim=True)
+        return prediction_i, prediction_j
+        
+
 
 def initialize_model(
     n_users: int=utils.get_data()["user_id"].nunique() + 1,

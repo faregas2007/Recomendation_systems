@@ -76,5 +76,39 @@ class RCDataloader(object):
 
         return torch.utils.data.DataLoader(dataset, batch_size=self.batch_size, shuffle=True, num_workers=self.params.num_workers)
 
-    
-    
+
+class BPRData(torch.utils.data.Dataset):
+    def __init__(self,
+            features,
+            num_item,
+            train_mat=None,
+            num_ng=0,
+            is_training=None):
+        self.features = features
+        self.num_item = num_item
+        self.train_mat = train_mat
+        self.num_ng = num_ng
+        self.is_training = is_training
+
+    def ng_sample(self):
+
+        self.features_fill = []
+        for x in self.features:
+            u, i = x[0], x[1]
+            for t in range(self.num_ng):
+                j = np.random.randint(self.num_items)
+                while (u,j) in self.train_mat:
+                    j = np.random.randint(self.num_item)
+                self.features_fill.append([u,i,j])
+
+    def __len__(self):
+        return self.num_ng * len(self.features) if self.is_training else len(self.features)
+
+    def __getitem__(self, idx):
+        features = self.features_fill if self.is_training else self.features
+
+        user = features[idx][0]
+        item_i = features[idx][1]
+        item_j = features[idx][2] if self.is_training else features[idx][1]
+
+        return user, item_i, item_j

@@ -1,7 +1,7 @@
 from app.api import models
 from app.api import schemas
 from sqlalchemy.orm import Session
-from app.api import utils
+from recsys import utils
 
 def add_movie(payload: schemas.MovieIn, db: Session):
     row = models.Movies(**payload.dict())
@@ -14,8 +14,8 @@ def get_movies(db: Session):
     query = db.query(models.Movies).all()
     return utils.to_array(query)
 
-def get_movies(item_id: int, db: Session):
-    query = db.query(models.Movies).filter(model.Movies.item_id = item_id).first()
+def get_movie(item_id: int, db: Session):
+    query = db.query(models.Movies).filter(models.Movies.item_id == item_id).first()
     return query.asdict(excude=['id'])
 
 def delete_movie(item_id: int, db: Session):
