@@ -1,55 +1,48 @@
-from fastapi import FastAPI, HTTPException, Header, APIRouter, Request 
+from fastapi import FasAPI, HTTPException, Header, APIRouter, Request, Depends
 from typing import List
-from recsys import utils
 
-from app.api.schemas import MovieIn, MovieOut, MovieUpdate
-from app.api.db import session, engine
+from app.api import schemas, db_manager, db
 
 from sqlalchemy.orm import Session
+from recsys import utils
 
 movies = APIRouter()
 
-@app.middleware('http')
-async def db_session_middleware(request: Request, call_next):
-    response = Request('Internal server error', status_code=500)
+def get_db():
+    sess = db.SessionLocal()
     try:
-        request.state.db = session()
-        response = await call_next()
+        yield sess
     finally:
-        request.state_db.close()
-    return respone
+        sess.close()
 
-# dependencies
-def get_db(request: Request):
-    return request.state.db
-
-@movies.get('/', response_model=List[MovieOut])
-def index(db: Session):
-    return db_manager.get_all_movies(db)
+@movies.get('/', response_model=List[MovieIn])
+def index(sess: Session=Depends(get_db)):
+    return db_manager.get_movies(sess)
 
 @movies.post('/', status_code=201)
-def add_movie(payload: MovieIn, db: Session=Depends(get_db)):
-    movie_id = db_manager.add_movie(db, payload)
+def add_movie(payload: MovieIn, sess: Session=Depends(get_db)):
+    movie_id = db_manager.add_movie(payload, sess)
     response = {
         'id': movie_id,
         **payload.dict()
     }
+
     return response
 
 @movies.put('/{item_id}')
-def update_movie(item_id: int, payload: MovieIn, db: Session=Depends(get_db)):
-    movie = db_manager.get_movie(db, item_id)
-    if not movie:
+def update_movie(item_id: int, payload: MovieUpdate, sess: Session=Depends(get_db)):
+    movie = db_manager.get_movies(item_id, sess)
+    if movie is None:
         raise HTTPException(status_code=404, detail='Movie not found')
     update_data = payload.dict(exclude_unset=True)
-    movie_in_db = MovieIn(**movie)
 
-    updated_movie = movie_in_db.copy(update=update_data)
-    return db_manager.update_movie(item_id, updated_movie)
+    updated_movie = MovieUpdate(**update_data)
+    return db_manager.update_movie(item_id, updated_movie, sess)
 
 @movies.delete('/{item_id}')
-def delete_movie(item_id: int, db: Session=Depends(get_db)):
-    movie = db_manager.get_movie(db, item_id)
+def delete_movie(item_id: int, sess: Session=Depends(get_db)):
+    movie = db_manager.get_movies(item_id, sess)
     if not movie:
-        raise HTTPException(status_code=404, detail='Movvie not found')
-    return db_manager.delete_movie(db, item_id)
+        raise HTTPException(status_code=404, detail='Movie not found')
+    return db_manager.delete_movie(item_id, sess)
+

@@ -1,29 +1,31 @@
-#from app.api.models import MovieIn, MovieOut, MovieUpdate
-#from app.api.schemas import MovieIn, MovieOut, MovieUpdate
-#from app.api.db import Movies
-from app.api.models import Movies
-from app.api.schemas import MovieIn, MovieOut, MovieUpdate
+from app.api import models
+from app.api import schemas
 from sqlalchemy.orm import Session
+from app.api import utils
 
-# without async since sqlalchemy doesn't support await. 
-# without using databases, async def will not be used.
+def add_movie(payload: schemas.MovieIn, db: Session):
+    row = models.Movies(**payload.dict())
+    db.add(row)
+    db.commit()
+    db.refresh(row)
+    return row
 
-def add_movie (db: Session, payload: MovieIn):
-    query = Movies.insert().values(**payload.dict())
-    return db.execute(query=query)
+def get_movies(db: Session):
+    query = db.query(models.Movies).all()
+    return utils.to_array(query)
 
-def get_all_movies(db: Session):
-    query = Movies.select()
-    return db.execute.fetch_all(query=query)
+def get_movies(item_id: int, db: Session):
+    query = db.query(models.Movies).filter(model.Movies.item_id = item_id).first()
+    return query.asdict(excude=['id'])
 
-def get_movie(db: Session, item_id: int):
-    query = Movies.select(Movies.c.item_id=item_id)
-    return db.fetch_one(query=query)
+def delete_movie(item_id: int, db: Session):
+    query = db.query(models.Movies).filter(models.Movies.item_id == item_id).first()
+    return query.asdict(excude=['id'])
 
-def delete_movie(db:Session, item_id:int):
-    query = Movies.delete().where(Movies.c.item_id==item_id)
-    return db.execute(query=query)
-
-def update_movie(db: Session, item_id:int, payload: MovieOut):
-    query = (Movies.update().where(Movies.c.item_id=item_id).values(**payload.dict()))
-    return db.execute(query=query)
+def update_movie(item_id: int, payload: schemas.MovieUpdate, db:Session):
+    query = db.query(model.Movies).filter(models.Movies.item_id == item_id).first()
+    query.ratings = payload.rating
+    query.title = payload.title
+    db.commit()
+    db.refresh(query)
+    return query.asdict(excude=['id'])

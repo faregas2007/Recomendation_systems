@@ -1,15 +1,17 @@
-from typing import List
 from pydantic import BaseModel
+from typing import List, Optional
 
-class Movie(BaseModel):
+class MovieIn(BaseModel):
     item_id: int
     rating: int
     title: str
-    genres: List[str]
 
 class MovieOut(MovieIn):
-    item_id: int
+    id: int
+
 
 class MovieUpdate(MovieIn):
-    item_id: Optional[int]=None
-    title: Optional[str]=None
+    item_id: Optional[int] = None
+    rating: Optional[int] = None
+    title: Optional[str] = None
+

@@ -11,6 +11,7 @@
 # testing metrics performance between models
 # validations handling/logger into the dataset.
 # logging systems for recsys
+# create dashboard, write ROC, AUC comparison between models, BPR, MF, ... 
 # unit_testing for recsys and app --> half done. 
 # CI/CD git action on testing --> check
 # deploy to cloud service, azureml, gcp, aws ...
