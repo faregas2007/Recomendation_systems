@@ -94,7 +94,8 @@ def train_model_app(
         mlflow.log_metrics(metrics)
 
         # log artifacts stored inside stores/model
-        with tempfile.TemporaryDirectory() as dp:
+        #with tempfile.TemporaryDirectory() as dp:
+        with tempfile.mkstemp() as dp:   
             utils.save_dict(vars(artifacts['params']), Path(dp, "params.json"), cls=NumpyEncoder)
             utils.save_dict(performance, Path(dp, "performance.json"))
             torch.save(artifacts['model'].state_dict(), Path(dp, "model.pt"))
